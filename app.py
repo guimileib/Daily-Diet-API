@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 from database import db
 from models.user import User
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -15,6 +16,28 @@ def criar_refeicoes():
     data = request.get_json() # Acessa os dados enviados na requesição
     data_hora_str = data['data_hora']
     data_hora = datetime.strptime(data_hora_str, '%d-%m-%Y %H:%M:%S')
+    try:
+        data = request.get_json() # Acessa os dados enviados na requesição
+        data_hora_str = data['data_hora']
+        data_hora = datetime.strptime(data_hora_str, '%d-%m-%Y %H:%M:%S')
+        
+        nova_refeicao = User(
+        nome=data['nome'],
+        data_hora=data_hora,
+        descricao=data['descricao'],
+        dieta=data['dieta']
+        )
+        
+        db.session.add(nova_refeicao)
+        db.session.commit()
+        
+        return jsonify({"message": "Dieta cadastrada com sucesso!"})
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"message": "Erro: Dados duplicados"}), 409
+    except:
+        return jsonify({"message": "Dados inválidos"}), 400
+     
     
     
     nova_refeicao = User(
