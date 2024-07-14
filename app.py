@@ -65,8 +65,19 @@ def editar_refeicoes(id):
     )
     db.session.add(nova_refeicao)
     db.session.commit()
-    return jsonify({"message": "Dieta cadastrada com sucesso!"})
     
     return jsonify({"message": "Refeicão editada com sucesso!"})
+#- apagar uma refeição (id) [DELETE]
+@app.route("/delete/<int:id>", methods=['DELETE'])
+def deletar_refeicoes(id):
+    user = User.query.get(id)
+    
+    if user:
+        db.session.delete(user) 
+        db.session.commit()
+        return jsonify({"message": f"A dieta do cliente id: ({id}) foi deletado com sucesso!"})
+
+    return jsonify({"message": f"Cliente não encontrado."}), 404
+
 if __name__ == '__main__':
     app.run(debug=True)
