@@ -38,7 +38,24 @@ def criar_refeicoes():
     except:
         return jsonify({"message": "Dados inválidos"}), 400
      
+# Editar refeição, podendo alterar todos os dados [PUT]
+@app.route("/editar/<int:id>", methods=['PUT'])
+def editar_refeicoes(id):
+    data = request.get_json()
+    refeicao = User.query.get(id)
+      
+    if not refeicao:
+        return jsonify({"error": "Refeição não encotrada"}), 404
     
+    if 'nome' in data:
+        refeicao.nome = data['nome']
+    if 'data_hora' in data:
+        data_hora_str = data['data_hora']
+        refeicao.data_hora = datetime.strptime(data_hora_str, '%d-%m-%Y %H:%M:%S') # Convertendo padrão string para datetime
+    if 'descricao' in data:
+        refeicao.descricao = data['descricao']
+    if 'dieta' in data:
+        refeicao.dieta = data['dieta']
     
     nova_refeicao = User(
        nome=data['nome'],
@@ -49,5 +66,7 @@ def criar_refeicoes():
     db.session.add(nova_refeicao)
     db.session.commit()
     return jsonify({"message": "Dieta cadastrada com sucesso!"})
+    
+    return jsonify({"message": "Refeicão editada com sucesso!"})
 if __name__ == '__main__':
     app.run(debug=True)
