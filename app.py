@@ -21,10 +21,6 @@ def criar_usuario():
     return jsonify({"message": "Usuário cadastrado com sucesso!", "user_id": novo_usuario.id}), 201
 
 @app.route("/create", methods=['POST'])
-def criar_refeicoes():
-    data = request.get_json() # Acessa os dados enviados na requesição
-    data_hora_str = data['data_hora']
-    data_hora = datetime.strptime(data_hora_str, '%d-%m-%Y %H:%M:%S')
 def criar_refeicoes(user_id):
     try:
         data = request.get_json() # Acessa os dados enviados na requesição
@@ -57,35 +53,30 @@ def criar_refeicoes(user_id):
 @app.route("/editar/<int:id>", methods=['PUT'])
 def editar_refeicoes(id):
     data = request.get_json()
-    refeicao = User.query.get(id)
+    refeicao = Refeicao.query.get(id)
       
     if not refeicao:
         return jsonify({"error": "Refeição não encotrada"}), 404
     
-    if 'nome' in data:
-        refeicao.nome = data['nome']
+    if 'descricao' in data:
+        refeicao.descricao = data['descricao']
     if 'data_hora' in data:
         data_hora_str = data['data_hora']
         refeicao.data_hora = datetime.strptime(data_hora_str, '%d-%m-%Y %H:%M:%S') # Convertendo padrão string para datetime
-    if 'descricao' in data:
-        refeicao.descricao = data['descricao']
     if 'dieta' in data:
         refeicao.dieta = data['dieta']
     
-    nova_refeicao = User(
-       nome=data['nome'],
-       data_hora=data_hora,
-       descricao=data['descricao'],
-       dieta=data['dieta']
-    )
-    db.session.add(nova_refeicao)
     db.session.commit()
     
     return jsonify({"message": "Refeicão editada com sucesso!"})
-#- apagar uma refeição (id) [DELETE]
-@app.route("/delete/<int:id>", methods=['DELETE'])
-def deletar_refeicoes(id):
-    user = User.query.get(id)
+
+# Buscar refeicões individuais
+@app.route("/list/<int:id>", methods=['GET'])
+def buscar_refeicao(id):
+    refeicao = User.query.get(id)
+    
+    if not refeicao:
+        return jsonify({"message": "Refeição não encontrada"}), 404
     
     if user:
         db.session.delete(user) 
