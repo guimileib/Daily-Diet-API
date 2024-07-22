@@ -1,7 +1,7 @@
 # API para controle de dieta diária, a Daily Diet API
 from flask import Flask, jsonify, request
 from database import db
-from models.user import User
+from models.user import User, Refeicao
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
@@ -25,12 +25,18 @@ def criar_refeicoes():
     data = request.get_json() # Acessa os dados enviados na requesição
     data_hora_str = data['data_hora']
     data_hora = datetime.strptime(data_hora_str, '%d-%m-%Y %H:%M:%S')
+def criar_refeicoes(user_id):
     try:
         data = request.get_json() # Acessa os dados enviados na requesição
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({"error": "Usuário não encontrado"}), 404
+        
         data_hora_str = data['data_hora']
         data_hora = datetime.strptime(data_hora_str, '%d-%m-%Y %H:%M:%S')
         
-        nova_refeicao = User(
+        nova_refeicao = Refeicao(
         nome=data['nome'],
         data_hora=data_hora,
         descricao=data['descricao'],
