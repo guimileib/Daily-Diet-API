@@ -78,12 +78,53 @@ def buscar_refeicao(id):
     if not refeicao:
         return jsonify({"message": "Refeição não encontrada"}), 404
     
-    if user:
-        db.session.delete(user) 
-        db.session.commit()
-        return jsonify({"message": f"A dieta do cliente id: ({id}) foi deletado com sucesso!"})
+    refeicao_data = {
+        "id": refeicao.id,
+        "nome": refeicao.nome,
+        "descricao": refeicao.descricao,
+        "data_hora": refeicao.data_hora.strftime('%d-%m-%Y %H:%M:%S'),  # Converte datetime para string
+        "dieta": refeicao.dieta,
+        "user_id": refeicao.user_id
+    }
+    
+    return jsonify(refeicao_data), 200
 
-    return jsonify({"message": f"Cliente não encontrado."}), 404
+# Listar todas as refeições de um usuário
+@app.route("/get_refeicoes/<int:user_id>", methods=['GET'])
+def listar_refeicoes(user_id):
+    user = User.query.get(user_id) 
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404   
+    
+    refeicoes = Refeicao.query.filter_by(user_id=user_id).all() 
+
+    refeicoes_data = []
+    for refeicao in refeicoes:
+        refeicoes_data.append({
+            "id": refeicao.id,
+            "descricao": refeicao.descricao,
+            "data_hora": refeicao.data_hora.strftime('%d-%m-%Y %H:%M:%S'),  # Converte datetime para string
+            "dieta": refeicao.dieta,
+            "user_id": refeicao.user_id
+        })
+        
+    return jsonify(refeicoes_data)
+# Apagar uma refeição (id) [DELETE]
+@app.route("/delete/<int:id>", methods=['DELETE'])
+def deletar_refeicao(id):
+    try:
+        refeicao = Refeicao.query.get(id)  
+        if not refeicao:
+            return jsonify({"error": "Refeição não encontrada"}), 404
+
+        db.session.delete(refeicao)
+        db.session.commit()
+
+        return jsonify({"message": "Refeição apagada com sucesso!"}), 200   
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
