@@ -11,6 +11,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:admin123@127.0.0.1
 
 db.init_app(app)
 
+# Criar Usuário
+@app.route("/create_user", methods=['POST'])
+def criar_usuario():
+    data = request.get_json()
+    novo_usuario = User(nome=data['nome'])
+    db.session.add(novo_usuario)
+    db.session.commit()
+    return jsonify({"message": "Usuário cadastrado com sucesso!", "user_id": novo_usuario.id}), 201
+
 @app.route("/create", methods=['POST'])
 def criar_refeicoes():
     data = request.get_json() # Acessa os dados enviados na requesição
